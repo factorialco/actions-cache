@@ -82942,6 +82942,7 @@ function restoreCache() {
                 core.info("Cache restored from s3 successfully");
             }
             catch (e) {
+                core.error(e);
                 core.info("Restore s3 cache failed: " + e.message);
                 utils_1.setCacheHitOutput(false);
                 if (useFallback) {

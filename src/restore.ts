@@ -65,6 +65,7 @@ async function restoreCache() {
       setCacheHitOutput(matchingKey === key);
       core.info("Cache restored from s3 successfully");
     } catch (e) {
+      core.error(e);
       core.info("Restore s3 cache failed: " + e.message);
       setCacheHitOutput(false);
       if (useFallback) {
