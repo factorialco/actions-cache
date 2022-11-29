@@ -67,7 +67,9 @@ async function saveCache() {
           core.info("Save cache using fallback successfully");
         }
       } else {
-        core.debug("skipped fallback cache");
+        core.error(e)
+        core.error(e.stack)
+        core.setFailed("Unable to save the cache");
       }
     }
   } catch (e) {
