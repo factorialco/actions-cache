@@ -50,14 +50,14 @@ async function restoreCache() {
         core.info(`Looking for exact match: ${localKey}`);
 
         if (fs.existsSync(localKey)) {
-          core.info('Local cache HIT!')
+          core.info('Local cache HIT! ✅')
           await fs.copy(localKey, archivePath)
           core.info('Local cache copied!')
       
           core.info('Extracting cache file...')
           await extractTar(archivePath, compressionMethod);
 
-          saveMatchedKey(localKey);
+          saveMatchedKey(key);
           setCacheHitOutput(true);
           setCacheHitLocal(true);
 
@@ -65,7 +65,7 @@ async function restoreCache() {
           return
         } else {
           setCacheHitLocal(false);
-          core.info('Local cache MISS!')
+          core.info('Local cache MISS! ❌')
         }
       }
 

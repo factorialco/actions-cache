@@ -24,9 +24,13 @@ async function saveCache() {
     const useFallback = getInputAsBoolean("use-fallback");
     const paths = getInputAsArray("path");
     const local = core.getInput("local");
+    const shouldNotStoreInLocal = !local || (local && isLocalHit())
+    const shouldNotStoreInRemote = isExactKeyMatch()
 
-    if (((local && isLocalHit()) || !local) && isExactKeyMatch()) {
+
+    if (shouldNotStoreInLocal && shouldNotStoreInRemote) {
       core.info("Cache was exact key match, not saving");
+
       return;
     }
 
@@ -50,17 +54,20 @@ async function saveCache() {
       core.debug(`Archive Path: ${archivePath}`);
 
       await createTar(archiveFolder, cachePaths, compressionMethod);
+
       if (core.isDebug()) {
         await listTar(archivePath, compressionMethod);
       }
 
-      const object = path.join(key, cacheFileName);
+      if (!shouldNotStoreInRemote) {
+        const object = path.join(key, cacheFileName);
 
-      core.info(`Uploading tar to s3. Bucket: ${bucket}, Object: ${object}`);
-      await mc.fPutObject(bucket, object, archivePath, {});
-      core.info("Cache saved to s3 successfully");
+        core.info(`Uploading tar to s3. Bucket: ${bucket}, Object: ${object}`);
+        await mc.fPutObject(bucket, object, archivePath, {});
+        core.info("Cache saved to s3 successfully");
+      }
 
-      if (local) {
+      if (!shouldNotStoreInLocal) {
         core.info("Local cache is enabled");
 
         const localKey = path.join(local, key, cacheFileName);
