@@ -86,6 +86,7 @@ async function saveCache() {
       }
     }
   } catch (e) {
+    core.debug(e.stack);
     core.info("warning: " + e.message);
   }
 }
