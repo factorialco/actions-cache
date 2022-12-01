@@ -25,7 +25,7 @@ async function saveCache() {
     const paths = getInputAsArray("path");
     const local = core.getInput("local");
 
-    if (isExactKeyMatch() && (!local || isLocalHit())) {
+    if ((local && isLocalHit()) || isExactKeyMatch()) {
       core.info("Cache was exact key match, not saving");
       return;
     }
@@ -61,13 +61,13 @@ async function saveCache() {
       core.info("Cache saved to s3 successfully");
 
       if (local) {
-        core.info('Local cache is enabled')
+        core.info("Local cache is enabled");
 
-        const localKey = path.join(local, key, cacheFileName)
+        const localKey = path.join(local, key, cacheFileName);
 
         core.info(`Storing local cache to: ${localKey}`);
 
-        await fs.copy(archivePath, localKey)
+        await fs.copy(archivePath, localKey);
 
         core.info("Cache saved to local successfully");
       }
