@@ -25,7 +25,7 @@ async function saveCache() {
     const paths = getInputAsArray("path");
     const local = core.getInput("local");
 
-    if ((local && isLocalHit()) || isExactKeyMatch()) {
+    if (((local && isLocalHit()) || !local) && isExactKeyMatch()) {
       core.info("Cache was exact key match, not saving");
       return;
     }
