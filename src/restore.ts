@@ -3,6 +3,7 @@ import * as utils from "@actions/cache/lib/internal/cacheUtils";
 import { extractTar, listTar } from "@actions/cache/lib/internal/tar";
 import * as core from "@actions/core";
 import * as path from "path";
+import * as fs from "fs-extra";
 import { State } from "./state";
 import {
   findObject,
@@ -24,8 +25,39 @@ async function restoreCache() {
     const useFallback = getInputAsBoolean("use-fallback");
     const paths = getInputAsArray("path");
     const restoreKeys = getInputAsArray("restore-keys");
+    const local = core.getInput("local");
 
     try {
+      const compressionMethod = await utils.getCompressionMethod();
+      const cacheFileName = utils.getCacheFileName(compressionMethod);
+      const archivePath = path.join(
+        await utils.createTempDirectory(),
+        cacheFileName
+      );
+
+      if (local) {
+        core.info('Local cache is enabled')
+
+        const localKey = path.join(local, key, cacheFileName)
+
+        core.info(`Finding exact match for: ${localKey}`);
+
+        if (fs.existsSync(localKey)) {
+          core.info('Local cache HIT!')
+          await fs.copy(localKey, archivePath)
+          core.info('Local cache copied!')
+      
+          core.info('Extracting cache file...')
+          await extractTar(archivePath, compressionMethod);
+
+          saveMatchedKey(localKey);
+          setCacheHitOutput(true);
+
+          core.info("Cache restored from local successfully");
+          return
+        }
+      }
+
       // Inputs are re-evaluted before the post action, so we want to store the original values
       core.saveState(State.PrimaryKey, key);
       core.saveState(State.AccessKey, core.getInput("accessKey"));
@@ -33,13 +65,6 @@ async function restoreCache() {
       core.saveState(State.SessionToken, core.getInput("sessionToken"));
 
       const mc = newMinio();
-
-      const compressionMethod = await utils.getCompressionMethod();
-      const cacheFileName = utils.getCacheFileName(compressionMethod);
-      const archivePath = path.join(
-        await utils.createTempDirectory(),
-        cacheFileName
-      );
 
       const { item: obj, matchingKey } = await findObject(
         mc,
