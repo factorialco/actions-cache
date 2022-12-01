@@ -4,4 +4,5 @@ export enum State {
     "AccessKey" = "access-key",
     "SecretKey" = "secret-key",
     "SessionToken" = "session-token",
+    "LocalHit" = "local-hit",
 }

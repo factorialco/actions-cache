@@ -33,6 +33,9 @@ inputs:
   key:
     description: "An explicit key for restoring and saving the cache"
     required: true
+  local:
+    description: "An optional path for local cache"
+    required: false
   restore-keys:
     description: "An ordered list of keys to use for restoring the cache if no cache hit occurred for key"
     required: false

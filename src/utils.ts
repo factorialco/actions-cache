@@ -77,6 +77,10 @@ export function setCacheHitOutput(isCacheHit: boolean): void {
   core.setOutput("cache-hit", isCacheHit.toString());
 }
 
+export function setCacheHitLocal(isCacheHit: boolean) {
+  return core.saveState(State.LocalHit, isCacheHit.toString());
+}
+
 type FindObjectResult = {
   item: minio.BucketItem;
   matchingKey: string;
@@ -153,6 +157,16 @@ export function saveMatchedKey(matchedKey: string) {
 
 function getMatchedKey() {
   return core.getState(State.MatchedKey);
+}
+
+export function isLocalHit(): boolean {
+  const localHit = core.getState(State.LocalHit);
+
+  core.debug(
+    `is: localHit=${localHit}`
+  );
+
+  return localHit === 'true';
 }
 
 export function isExactKeyMatch(): boolean {
