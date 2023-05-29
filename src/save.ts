@@ -27,7 +27,6 @@ async function saveCache() {
     const shouldNotStoreInLocal = !local || (local && isLocalHit())
     const shouldNotStoreInRemote = isExactKeyMatch()
 
-
     if (shouldNotStoreInLocal && shouldNotStoreInRemote) {
       core.info("Cache was exact key match, not saving");
 
@@ -47,9 +46,16 @@ async function saveCache() {
       core.debug("Cache Paths:");
       core.debug(`${JSON.stringify(cachePaths)}`);
 
+      if(cachePaths.length === 0) {
+        core.setFailed(`No files to cache in ${paths.join(', ')}`);
+
+        return
+      }
+
       const archiveFolder = await utils.createTempDirectory();
       const cacheFileName = utils.getCacheFileName(compressionMethod);
       const archivePath = path.join(archiveFolder, cacheFileName);
+
 
       core.debug(`Archive Path: ${archivePath}`);
 
@@ -78,7 +84,7 @@ async function saveCache() {
 
         core.info("Cache saved to local successfully");
       }
-    } catch (e) {
+    } catch (e: any) {
       core.info("Save s3 cache failed: " + e.message);
       if (useFallback) {
         if (isGhes()) {
@@ -92,7 +98,7 @@ async function saveCache() {
         core.debug("skipped fallback cache");
       }
     }
-  } catch (e) {
+  } catch (e: any) {
     core.info(e.stack);
     core.info("warning: " + e.message);
   }

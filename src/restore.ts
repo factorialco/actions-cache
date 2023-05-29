@@ -94,7 +94,7 @@ async function restoreCache() {
       await extractTar(archivePath, compressionMethod);
       setCacheHitOutput(matchingKey === key);
       core.info("Cache restored from s3 successfully");
-    } catch (e) {
+    } catch (e: any) {
       core.info("Restore s3 cache failed: " + e.message);
       setCacheHitOutput(false);
       if (useFallback) {
@@ -116,7 +116,7 @@ async function restoreCache() {
         }
       }
     }
-  } catch (e) {
+  } catch (e: any) {
     core.setFailed(e.message);
   }
 }
