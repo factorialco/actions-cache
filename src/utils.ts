@@ -109,13 +109,17 @@ export async function findObject(
     const fn = utils.getCacheFileName(compressionMethod);
     core.debug(`Finding object with prefix: ${restoreKey}`);
     let objects = await listObjects(mc, bucket, restoreKey);
-    objects = objects.filter((o) => o.name.includes(fn));
+    objects = objects.filter((o) => o.name && o.name.includes(fn));
     core.debug(`Found ${JSON.stringify(objects, null, 2)}`);
     if (objects.length < 1) {
       continue;
     }
     const sorted = objects.sort(
-      (a, b) => b.lastModified.getTime() - a.lastModified.getTime()
+      (a, b) => {
+        if (!a.lastModified || !b.lastModified) return 0
+
+        return b.lastModified.getTime() - a.lastModified.getTime()
+      }
     );
     const result = { item: sorted[0], matchingKey: restoreKey };
     core.debug(`Using latest ${JSON.stringify(result)}`);
