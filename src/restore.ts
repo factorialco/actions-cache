@@ -27,6 +27,7 @@ async function restoreCache() {
     const paths = getInputAsArray("path");
     const restoreKeys = getInputAsArray("restore-keys");
     const local = core.getInput("local");
+    const errorOnS3Exception = getInputAsBoolean("error-on-s3-exception");
 
     try {
       const compressionMethod = await utils.getCompressionMethod();
@@ -43,18 +44,18 @@ async function restoreCache() {
       core.saveState(State.SessionToken, core.getInput("sessionToken"));
 
       if (local) {
-        core.info('Local cache is enabled')
+        core.info("Local cache is enabled");
 
-        const localKey = path.join(local, key, cacheFileName)
+        const localKey = path.join(local, key, cacheFileName);
 
         core.info(`Looking for exact match: ${localKey}`);
 
         if (fs.existsSync(localKey)) {
-          core.info('Local cache HIT! ✅')
-          await fs.copy(localKey, archivePath)
-          core.info('Local cache copied!')
-      
-          core.info('Extracting cache file...')
+          core.info("Local cache HIT! ✅");
+          await fs.copy(localKey, archivePath);
+          core.info("Local cache copied!");
+
+          core.info("Extracting cache file...");
           await extractTar(archivePath, compressionMethod);
 
           saveMatchedKey(key);
@@ -62,10 +63,10 @@ async function restoreCache() {
           setCacheHitLocal(true);
 
           core.info("Cache restored from local successfully");
-          return
+          return;
         } else {
           setCacheHitLocal(false);
-          core.info('Local cache MISS! ❌')
+          core.info("Local cache MISS! ❌");
         }
       }
 
@@ -98,8 +99,12 @@ async function restoreCache() {
       setCacheHitOutput(matchingKey === key);
       core.info("Cache restored from s3 successfully");
     } catch (e: any) {
-      core.info("Restore s3 cache failed: " + e.message);
       setCacheHitOutput(false);
+      if (errorOnS3Exception) {
+        core.setFailed("Restore s3 cache failed: " + e.message);
+      } else {
+        core.info("Restore s3 cache failed: " + e.message);
+      }
       if (useFallback) {
         if (isGhes()) {
           core.warning("Cache fallback is not supported on Github Enterpise.");
