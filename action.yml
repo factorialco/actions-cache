@@ -47,6 +47,10 @@ inputs:
     description: "Whether to mark the job as failed or not depending on S3 exceptions."
     required: false
     default: "false"
+  save:
+    description: "Whether to save the cache after the job. Set to 'false' for restore-only mode."
+    required: false
+    default: "true"
   # zip-option:
   #   description: zip options
   #   required: false
