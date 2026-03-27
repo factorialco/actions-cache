@@ -18,6 +18,11 @@ process.on("uncaughtException", (e) => core.info("warning: " + e.message));
 
 async function saveCache() {
   try {
+    if (core.getInput("save") === "false") {
+      core.info("Cache save is disabled (save: false)");
+      return;
+    }
+
     const bucket = core.getInput("bucket", { required: true });
     // Inputs are re-evaluted before the post action, so we want the original key
     const key = core.getState(State.PrimaryKey);
